@@ -2,7 +2,6 @@ require('conf/norsys_cras.js');//load private data
 
 var urlLogin = "https://norsys-daily.norsys.fr/login";
 var urlAbsences = "https://norsys-daily.norsys.fr/absences?idPerson=";
-var screenshots = "/Users/llasry/Documents/www/conges_norsys/";
 var formSelect = 'form[id="login-form"]';
 var fs = require('fs');
 
