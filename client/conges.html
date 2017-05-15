@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Congés Norsys</title>
+		<link href='https://fullcalendar.io/css/base.css?3.4.0-1.6.2-3' rel='stylesheet' />
+		<link rel='stylesheet' href='https://fullcalendar.io/js/fullcalendar-3.4.0/fullcalendar.min.css' />
+
+			<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment.min.js'></script>
+	<script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+	<script src='https://fullcalendar.io/js/fullcalendar-3.4.0/fullcalendar.min.js'></script>
+	<script src='https://cdn.jsdelivr.net/instantsearch.js/1/instantsearch.min.js'></script>
+	<script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+
+</head>
+<body>
+
+
+<div id="calendar"></div>
+
+<script src="./algolia_conf.js"></script>
+<script src="./fr_holidays.js"></script>
+<script>
+
+function formatDateObj(dateObj){
+
+	var day = dateObj.getDate();
+  	var monthIndex = dateObj.getMonth();
+  	var year = dateObj.getFullYear();
+
+ 	 return year+"-"+(monthIndex>9?monthIndex:"0"+monthIndex)+"-"+(day>9?day:"0"+day);
+}
+
+var PARAMS = {
+  };
+
+
+var client = algoliasearch(APPLICATION_ID, SEARCH_ONLY_API_KEY,{
+  timeout: 4000
+});
+var index = client.initIndex(INDEX_NAME);
+var data = null;
+console.log(fr_holidays);
+var holidays = Object.keys(fr_holidays);
+var holidays_events = [];
+var user;
+var start,end;
+var absencesEvents = [];
+var startTime = '' ;
+var endTime = '';
+var title = '';
+
+for(holiday in fr_holidays)
+{
+	title = fr_holidays[holiday][0].name;
+	start = fr_holidays[holiday][0].date.replace("2016","2017");
+	end = fr_holidays[holiday][0].date.replace("2016","2017");
+	holidays_events.push({title: title,start,end,color:'green'})
+}
+console.log(holidays_events);
+index.search('',  {hitsPerPage: 2000
+},function(err, content) {
+  data = content.hits;
+
+
+
+title = '';
+for(var i=0; i<data.length; i++)
+	{	
+		user = data[i].person.cn;
+		start = formatDateObj(new Date(data[i].absenceStartDate));
+		end = formatDateObj(new Date(data[i].absenceEndDate));
+		
+		startTime = data[i].startMorning ? "T08:00:00":"T12:00:00";
+		endTime = data[i].finishAfternoon ? "T12:00:00":"T18:00:00";
+
+		start = start + startTime;
+		end = end + endTime;
+		title = user + " - " + data[i].absenceType + " ("+ data[i].absenceComment +" )";
+		absencesEvents.push({title: title,start,end});
+
+	}
+
+testEvents = [
+				{
+					title: 'All Day Event',
+					start: '2017-05-01'
+				},
+				{
+					title: 'Long Event',
+					start: '2017-05-07',
+					end: '2017-05-10'
+				},
+				{
+					id: 999,
+					title: 'Repeating Event',
+					start: '2017-05-09T16:00:00'
+				},
+				{
+					id: 999,
+					title: 'Repeating Event',
+					start: '2017-05-16T16:00:00'
+				},
+				{
+					title: 'Conference',
+					start: '2017-05-11',
+					end: '2017-05-13'
+				},
+				{
+					title: 'Meeting',
+					start: '2017-05-12T10:30:00',
+					end: '2017-05-12T12:30:00'
+				},
+				{
+					title: 'Lunch',
+					start: '2017-05-12T12:00:00'
+				},
+				{
+					title: 'Meeting',
+					start: '2017-05-12T14:30:00'
+				},
+				{
+					title: 'Happy Hour',
+					start: '2017-05-12T17:30:00'
+				},
+				{
+					title: 'Dinner',
+					start: '2017-05-12T20:00:00'
+				},
+				{
+					title: 'Birthday Party',
+					start: '2017-05-13T07:00:00'
+				},
+				{
+					title: 'Click for Google',
+					url: 'http://google.com/',
+					start: '2017-05-28'
+				}
+			];
+	absencesEvents = absencesEvents.concat(holidays_events);
+	$(document).ready(function() {
+		
+		$('#calendar').fullCalendar({
+			header: {
+				left: 'prev,next today',
+				center: 'title',
+				right: 'month,basicWeek,basicDay'
+			},
+			defaultDate: '2017-05-12',
+			displayEventEnd: true,
+			navLinks: true, // can click day/week names to navigate views
+			editable: true,
+			eventLimit: true, // allow "more" link when too many events
+			events : absencesEvents,
+		})
+	});
+
+});
+/*
+function app(opts) {
+  // ---------------------
+  //
+  //  Init
+  //
+  // ---------------------
+  const search = instantsearch({
+    appId: opts.appId,
+    apiKey: opts.apiKey,
+    indexName: opts.indexName,
+    urlSync: true,
+  });
+
+	  // search by date between 2013-03-10 & 2013-04-20
+	helper.addNumericRefinement('last_update', '>=', 1362873600);
+	helper.addNumericRefinement('last_update', '<=', 1366416000);
+	helper.search();
+};
+
+
+
+*/
+
+
+/*$.get( "http://localhost:8091/conges_norsys/data.json", function( data ) {
+console.log(data);
+});*/
+
+</script>
+</body>
+</html>

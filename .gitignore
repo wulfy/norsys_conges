@@ -1,0 +1,5 @@
+vendor
+logs
+data.json
+conf
+algolia_conf.js
